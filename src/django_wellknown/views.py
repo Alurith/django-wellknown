@@ -1,8 +1,11 @@
 from django.conf import settings
 from django.http import (
     HttpResponse,
+    HttpResponseRedirect,
     JsonResponse,
 )
+from django.urls import reverse
+from django.urls.exceptions import NoReverseMatch
 
 from django_wellknown import helpers
 
@@ -74,3 +77,22 @@ def gpc_json(request):
     resp = JsonResponse(cfg)
     resp["Cache-Control"] = "max-age=3600"
     return resp
+
+
+def change_password(request):
+    """Redirect a change password page.
+
+    Use settings.WELLKNOWN_PASSWORD_URL = "/account/password/change/" (or a view) to enable the redirect.
+
+    Use settings.WELLKNOWN_PASSWORD = True with django-allauth to enable the redirect on "account_change_password"
+    """
+    try:
+        url = reverse("account_change_password")
+    except NoReverseMatch as _e:
+        url = _get_setting("WELLKNOWN_PASSWORD_URL")
+        if not url:
+            raise ValueError("WELLKNOWN_PASSWORD_URL is required")
+
+        url = helpers.abs_https(request=request, value=url)
+
+    return HttpResponseRedirect(url)
