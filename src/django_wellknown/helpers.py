@@ -50,11 +50,9 @@ def abs_https(*, request, value: str) -> str:
 
     parsed = urlparse(value)
     if parsed.scheme in WEB_SCHEMES:
-        host = (
-            parsed.netloc
-            or getattr(settings, "WELLKNOWN_HOST", "")
-            or request.get_host()
-        )
+        host = getattr(settings, "WELLKNOWN_HOST", None)
+        if host is None:
+            host = parsed.netloc or request.get_host()
         value = str(urlunparse(("https", host, parsed.path, "", parsed.query, "")))
     return value
 
