@@ -1,5 +1,8 @@
 from django.conf import settings
-from django.http import HttpResponse
+from django.http import (
+    HttpResponse,
+    JsonResponse,
+)
 
 from django_wellknown import helpers
 
@@ -50,5 +53,24 @@ def security_txt(request):
 
     body = "\n".join(lines) + "\n"
     resp = HttpResponse(body, content_type="text/plain; charset=utf-8")
+    resp["Cache-Control"] = "max-age=3600"
+    return resp
+
+
+def gpc_json(request):
+    """Global Privacy Control declaration.
+
+
+    settings.WELLKNOWN_GPC = {"gpc": True, "lastUpdate": "YYYY-MM-DD"}
+    """
+    cfg = dict(_get_setting("WELLKNOWN_GPC"))
+
+    cfg.setdefault("gpc", False)
+
+    last_update = cfg.get("lastUpdate", None)
+    if not last_update:
+        raise ValueError("lastUpdate is required")
+    cfg["lastUpdate"] = helpers.iso8601(dt_str=last_update)
+    resp = JsonResponse(cfg)
     resp["Cache-Control"] = "max-age=3600"
     return resp

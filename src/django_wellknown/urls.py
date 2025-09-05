@@ -7,5 +7,7 @@ urlpatterns = []
 
 if getattr(settings, "WELLKNOWN_SECURITY", None):
     urlpatterns.append(
-        path(".well-known/security.txt", views.security_txt, name="security_txt"),
+        path(".well-known/security.txt", views.security_txt, name="security_txt")
     )
+if getattr(settings, "WELLKNOWN_GPC", None):
+    urlpatterns.append(path(".well-known/gpc.json", views.gpc_json, name="gpc_json"))
