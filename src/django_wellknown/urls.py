@@ -1,19 +1,18 @@
-from django.conf import settings
 from django.urls import path
 
-from django_wellknown import views
+from django_wellknown import helpers, views
 
 urlpatterns = []
 
-if getattr(settings, "WELLKNOWN_SECURITY", None):
+if helpers.get_setting("WELLKNOWN_SECURITY"):
     urlpatterns.append(
         path(".well-known/security.txt", views.security_txt, name="security_txt")
     )
-if getattr(settings, "WELLKNOWN_GPC", None):
+if helpers.get_setting("WELLKNOWN_GPC"):
     urlpatterns.append(path(".well-known/gpc.json", views.gpc_json, name="gpc_json"))
 
-if getattr(settings, "WELLKNOWN_PASSWORD", None) or getattr(
-    settings, "WELLKNOWN_PASSWORD_URL", None
+if helpers.get_setting("WELLKNOWN_PASSWORD") or helpers.get_setting(
+    "WELLKNOWN_PASSWORD_URL"
 ):
     urlpatterns.append(
         path(

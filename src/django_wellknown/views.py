@@ -1,4 +1,3 @@
-from django.conf import settings
 from django.http import (
     HttpResponse,
     HttpResponseRedirect,
@@ -6,16 +5,16 @@ from django.http import (
 )
 from django.urls import reverse
 from django.urls.exceptions import NoReverseMatch
+from django.views.decorators.cache import cache_control
+from django.views.decorators.http import require_GET
 
 from django_wellknown import helpers
 
 
-def _get_setting(name, default=None):
-    return getattr(settings, name, default)
-
-
+@require_GET
+@cache_control(max_age=60 * 60)
 def security_txt(request):
-    cfg = _get_setting("WELLKNOWN_SECURITY", {}) or {}
+    cfg = helpers.get_setting("WELLKNOWN_SECURITY", {}) or {}
     lines = []
 
     contact = cfg.get("contact")
@@ -56,17 +55,18 @@ def security_txt(request):
 
     body = "\n".join(lines) + "\n"
     resp = HttpResponse(body, content_type="text/plain; charset=utf-8")
-    resp["Cache-Control"] = "max-age=3600"
     return resp
 
 
+@require_GET
+@cache_control(max_age=60 * 60)
 def gpc_json(request):
     """Global Privacy Control declaration.
 
 
     settings.WELLKNOWN_GPC = {"gpc": True, "lastUpdate": "YYYY-MM-DD"}
     """
-    cfg = dict(_get_setting("WELLKNOWN_GPC"))
+    cfg = dict(helpers.get_setting("WELLKNOWN_GPC"))
 
     cfg.setdefault("gpc", False)
 
@@ -75,10 +75,10 @@ def gpc_json(request):
         raise ValueError("lastUpdate is required")
     cfg["lastUpdate"] = helpers.iso8601(dt_str=last_update)
     resp = JsonResponse(cfg)
-    resp["Cache-Control"] = "max-age=3600"
     return resp
 
 
+@require_GET
 def change_password(request):
     """Redirect a change password page.
 
@@ -89,7 +89,7 @@ def change_password(request):
     try:
         url = reverse("account_change_password")
     except NoReverseMatch as _e:
-        url = _get_setting("WELLKNOWN_PASSWORD_URL")
+        url = helpers.get_setting("WELLKNOWN_PASSWORD_URL")
         if not url:
             raise ValueError("WELLKNOWN_PASSWORD_URL is required")
 

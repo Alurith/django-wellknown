@@ -8,6 +8,10 @@ WEB_SCHEMES = ("http", "https")
 NON_WEB_SCHEMES = ("mailto:", "tel:", "dns:", "openpgp4fpr:")
 
 
+def get_setting(name, default=None):
+    return getattr(settings, name, default)
+
+
 def abs_https(*, request, value: str) -> str:
     """
     Returns an absolute https URI (if it's a web URI).
