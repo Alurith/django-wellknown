@@ -5,14 +5,14 @@
 - `security.txt` (RFC 9116)
 
 
-#### Installazione
+## Install
 
 
 ```bash
 uv pip install "git+https://github.com/Alurith/django-wellknown.git"
 ```
 
-## Sviluppo locale
+## Local Development
 ```bash
 git clone https://github.com/Alurith/django-wellknown.git
 cd django-wellknown
