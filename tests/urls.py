@@ -9,12 +9,7 @@ def dummy_change_password(request):
 urlpatterns = [
     path("", include("django_wellknown.urls")),
     path(
-        "accounts/password/change/",
-        dummy_change_password,
-        name="account_change_password",
-    ),
-    path(
-        "accounts/management/change_password",
+        "accounts/management/change_password/",
         dummy_change_password,
         name="change_password",
     ),
