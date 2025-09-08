@@ -1,0 +1,66 @@
+name: CI
+
+on:
+  # push:
+  # pull_request:
+  workflow_dispatch:
+
+jobs:
+  tests:
+    name: "py${{ matrix.python-version }} • Django ${{ matrix.django-version }}"
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.8", "3.9", "3.10", "3.11", "3.12", "3.13"]
+        django-version: ["4.2", "5.0", "5.1", "5.2"]
+        exclude:
+          # Django 5.0 supports 3.10–3.12 only
+          - { django-version: "5.0", python-version: "3.8" }
+          - { django-version: "5.0", python-version: "3.9" }
+          - { django-version: "5.0", python-version: "3.13" }
+          # Django 5.1 supports 3.10–3.13
+          - { django-version: "5.1", python-version: "3.8" }
+          - { django-version: "5.1", python-version: "3.9" }
+          # Django 5.2 supports 3.10–3.13
+          - { django-version: "5.2", python-version: "3.8" }
+          - { django-version: "5.2", python-version: "3.9" }
+          # Django 4.2 (LTS) supports 3.8–3.12
+          - { django-version: "4.2", python-version: "3.13" }
+
+    env:
+      UV_SYSTEM_PYTHON: "1"
+      PYTHONDONTWRITEBYTECODE: "1"
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: "Setup uv + Python ${{ matrix.python-version }}"
+        uses: astral-sh/setup-uv@v6
+        with:
+          python-version: ${{ matrix.python-version }}
+          enable-cache: true
+
+      - name: Show versions
+        run: |
+          python -V
+          uv --version
+
+      - name: Install deps (project + test tools)
+        run: |
+          uv pip install -e .
+          # pytest: special pin on Python 3.8 (pytest>=8.4 requires >=3.9)
+          if [ "${{ matrix.python-version }}" = "3.8" ]; then
+            uv pip install "pytest<8.4" "pytest-django>=4.9" "coverage>=7"
+          else
+            uv pip install "pytest>=8" "pytest-django>=4.9" "coverage>=7"
+          fi
+          # Install Django (latest patch)
+          uv pip install "Django~=${{ matrix.django-version }}"
+
+      - name: Show Django version
+        run: python - <<'PY'
+          import django; print("Django", django.get_version())
+          PY
+      - name: Run tests
+        run: uv run pytest --ds=django_wellknown.test_settings -q
