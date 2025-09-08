@@ -48,9 +48,6 @@ jobs:
 
       - name: Install deps (project + test tools)
         run: uv sync --dev
-      - name: Show Django version
-        run: python - <<'PY'
-          import django; print("Django", django.get_version())
-          PY
+
       - name: Run tests
         run: uv run pytest --ds=django_wellknown.test_settings -q
