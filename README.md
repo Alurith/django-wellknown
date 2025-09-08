@@ -103,6 +103,17 @@ WELLKNOWN_GPC = {
 
 Visit `/.well-known/gpc.json`. The GPC support resource lets your site advertise that it recognizes and honors the GPC signal; the actual user preference is conveyed via HTTP header / JS API.
 
+#### GPC Middleware
+
+This tiny middleware is build to act on the per-request GPC signal across your app (e.g., skip trackers or "sale/share" flows), and it works both in sync and async. It reads the browser's Sec-GPC header and exposes `request.gpc`. When the signal is present (`Sec-GPC: 1`), it also appends `Vary: Sec-GPC` so caches/CDNs keep a distinct variant. 
+
+```python
+# settings.py
+MIDDLEWARE = [
+    # ...your other middleware...
+    "django_wellknown.middleware.gpc_middleware",
+]
+```
 
 ## Settings reference
 
