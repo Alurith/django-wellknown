@@ -1,14 +1,16 @@
 import datetime
+from typing import Any
 from urllib.parse import urlparse, urlunparse
 
 from django.conf import settings
+from django.http import HttpRequest
 from django.urls import reverse
 
 WEB_SCHEMES = ("http", "https")
 NON_WEB_SCHEMES = ("mailto:", "tel:", "dns:", "openpgp4fpr:")
 
 
-def get_setting(name, default=None):
+def get_setting(name, default=None) -> Any | None:
     """Fetch a Django setting or return `default` if missing.
 
     A trivial wrapper over `django.conf.settings` that makes it simpler to
@@ -17,7 +19,7 @@ def get_setting(name, default=None):
     return getattr(settings, name, default)
 
 
-def abs_https(*, request, value: str) -> str:
+def abs_https(*, request: HttpRequest, value: str) -> str:
     """Return an absolute HTTPS URI for a *web* link; preserve non-web schemes.
 
     Behaviour:
@@ -44,13 +46,13 @@ def abs_https(*, request, value: str) -> str:
 
     if "://" not in value:
         if value.startswith("/"):
-            value = request.build_absolute_uri(value)
+            value: str = request.build_absolute_uri(value)
         else:
-            value = request.build_absolute_uri(reverse(value))
+            value: str = request.build_absolute_uri(reverse(value))
 
     parsed = urlparse(value)
     if parsed.scheme in WEB_SCHEMES:
-        host = getattr(settings, "WELLKNOWN_HOST", None)
+        host = get_setting("WELLKNOWN_HOST")
         if host is None:
             host = parsed.netloc or request.get_host()
         value = str(urlunparse(("https", host, parsed.path, "", parsed.query, "")))
@@ -74,7 +76,7 @@ def iso8601(*, dt_str: str) -> str:
     try:
         d = datetime.datetime.fromisoformat(dt_str)
         if d.tzinfo is None:
-            d = d.replace(tzinfo=datetime.timezone.utc)
+            d: datetime.datetime = d.replace(tzinfo=datetime.timezone.utc)
         return d.astimezone(datetime.timezone.utc).isoformat().replace("+00:00", "Z")
     except Exception as e:
         raise ValueError(f"{e}. Expires must be ISO 8601 (e.g. 2026-01-01T00:00:00Z)")
