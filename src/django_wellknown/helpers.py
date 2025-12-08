@@ -1,5 +1,5 @@
 import datetime
-from typing import Any
+from typing import Any, Union
 from urllib.parse import urlparse, urlunparse
 
 from django.conf import settings
@@ -10,7 +10,7 @@ WEB_SCHEMES = ("http", "https")
 NON_WEB_SCHEMES = ("mailto:", "tel:", "dns:", "openpgp4fpr:")
 
 
-def get_setting(name, default=None) -> Any | None:
+def get_setting(name, default=None) -> Union[Any, None]:
     """Fetch a Django setting or return `default` if missing.
 
     A trivial wrapper over `django.conf.settings` that makes it simpler to
